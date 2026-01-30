@@ -365,5 +365,5 @@ def check_vhost_enhanced(url: str) -> None:
         logger.exception("Exception in vhost checker")
 
 
-def check_vhost(url: str) -> None:
+def check_vhost(url: str, **kwargs) -> None:
     check_vhost_enhanced(url)

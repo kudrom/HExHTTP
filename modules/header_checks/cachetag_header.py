@@ -3,12 +3,12 @@
 from utils.style import Colors
 
 
-def check_cachetag_header(base_header: list[str]) -> None:
+def check_cachetag_header(resp_main_headers: list[str], **kwargs) -> None:
     print(f"{Colors.CYAN} ├ Header cache tags{Colors.RESET}")
 
     results = []
 
-    for header in base_header:
+    for header in resp_main_headers:
         # Skip headers without colons to avoid index errors
         if ":" not in header:
             continue

@@ -460,8 +460,8 @@ class ServerErrorAnalyzer:
         return results
 
 
-def get_server_error(
-    url: str, authent: tuple[str, str] | None = None
+def check_server_error(
+    url: str, authent: tuple[str, str], **kwargs
 ) -> dict[str, Any]:
     """Function wrapper pour compatibilité"""
     analyzer = ServerErrorAnalyzer()

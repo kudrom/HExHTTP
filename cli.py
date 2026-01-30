@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from modules.logging_config import valid_log_level
 from static.banner import run_banner
 from utils.style import Colors
-from utils.utils import argparse, sys, random
+from utils.utils import argparse, sys, random, valid_log_level
+from modules import get_modules
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -16,7 +16,7 @@ USER_AGENTS = [
 
 DEFAULT_USER_AGENT = random.choice(USER_AGENTS)
 
-def args() -> argparse.Namespace:
+def get_args() -> argparse.Namespace:
     """
     Parses command-line arguments and returns them.
 
@@ -42,7 +42,6 @@ def args() -> argparse.Namespace:
         -hu, --humans: Performs a timesleep to reproduce human behavior (Default: 0s) value: 'r' or 'random'
         -p, --proxy: proxy all requests through this proxy (format: host:port, default: 127.0.0.1:8080)
         --burp: send behavior and confirmed requests to Burp proxy (format: host:port, default: 127.0.0.1:8080)
-        --ocp, --only-cp: Only cache poisoning modules
 
     If no argument is provided, the function will print the help message and exit.
     """
@@ -147,13 +146,13 @@ def args() -> argparse.Namespace:
         required=False,
     )
 
-    group = parser.add_argument_group(f"{Colors.BLUE}> Tips{Colors.RESET}")
+    group = parser.add_argument_group(f"{Colors.BLUE}> Modules{Colors.RESET}")
     group.add_argument(
-        "--ocp",
-        "--only-cp",
-        action="store_true",
-        dest="only_cp",
-        help="Only cache poisoning modules",
+        "-m",
+        "--modules",
+        default=get_modules().keys(),
+        nargs='+',
+        help="What modules to run",
         required=False,
     )
 

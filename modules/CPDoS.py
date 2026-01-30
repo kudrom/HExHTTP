@@ -109,19 +109,19 @@ def run_cpdos_modules(
 def check_CPDoS(
     url: str,
     s: requests.Session,
-    req_main: requests.Response,
-    custom_header: dict,
+    req: requests.Response,
+    args: argparse.Namespace,
     authent: tuple[str, str] | None,
-    human: str,
+    **kwargs
 ) -> None:
-    if req_main.status_code in [301, 302]:
+    if req.status_code in [301, 302]:
         url = (
-            req_main.headers["location"]
-            if "http" in req_main.headers["location"]
-            else f'{url}{req_main.headers["location"]}'
+            req.headers["location"]
+            if "http" in req.headers["location"]
+            else f'{url}{req.headers["location"]}'
         )
 
     print(f"{Colors.CYAN} ├ CPDoS analysis{Colors.RESET}")
 
-    run_cpdos_modules(url, s, authent, human)
-    crawl_files(url, s, req_main, authent, human)
+    run_cpdos_modules(url, s, authent, args.humans)
+    crawl_files(url, s, req, authent, args.humans)

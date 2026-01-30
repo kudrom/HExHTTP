@@ -65,19 +65,19 @@ def run_cve_modules(
 
 def check_cpcve(
     url: str,
+    args: argparse.Namespace,
     s: requests.Session,
-    req_main: requests.Response,
-    custom_header: dict,
+    req: requests.Response,
     authent: tuple[str, str] | None,
-    human: str,
+    **kwargs
 ) -> None:
-    if req_main.status_code in [301, 302]:
+    if req.status_code in [301, 302]:
         url = (
-            req_main.headers["location"]
-            if "http" in req_main.headers["location"]
-            else f'{url}{req_main.headers["location"]}'
+            req.headers["location"]
+            if "http" in req.headers["location"]
+            else f'{url}{req.headers["location"]}'
         )
 
     print(f"{Colors.CYAN} ├ Cache CVE analysis{Colors.RESET}")
 
-    run_cve_modules(url, s, req_main, custom_header, authent)
+    run_cve_modules(url, s, req, args.custom_header, authent)

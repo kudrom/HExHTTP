@@ -6,9 +6,9 @@ from utils.style import Colors
 from utils.utils import configure_logger, requests, random, range_exclusion, traceback, sys, human_time, random_ua
 from modules.lists.debug_list import DEBUG_HEADERS
 
-def check_http_debug(url, s, main_status_code, main_len, main_head, authent, human):
+def check_http_debug(url, s, req, authent, args, **kwargs):
     print(f"{Colors.CYAN} ├ Debug Headers analysis{Colors.RESET}")
-    rel = range_exclusion(main_len)
+    rel = range_exclusion(len(req.content))
     
     behavior_groups = {}
     
@@ -16,25 +16,25 @@ def check_http_debug(url, s, main_status_code, main_len, main_head, authent, hum
         try:
             uri = f"{url}?cb={random.randrange(999)}"
             s.headers.update(random_ua())
-            human_time(human)
+            human_time(args.humans)
             req_dh = s.get(uri, headers=dh, allow_redirects=False, verify=False)
             
             behavior_key = None
             behavior_msg = None
             
-            if req_dh.status_code != main_status_code and req_dh.status_code not in [403, 401, 429]:
+            if req_dh.status_code != req.status_code and req_dh.status_code not in [403, 401, 429]:
                 status_range = (req_dh.status_code // 10) * 10
-                behavior_key = f"STATUS_{main_status_code}_{status_range}"
-                behavior_msg = f"INTERESTING BEHAVIOR | {main_status_code} > {req_dh.status_code}"
+                behavior_key = f"STATUS_{req.status_code}_{status_range}"
+                behavior_msg = f"INTERESTING BEHAVIOR | {req.status_code} > {req_dh.status_code}"
                 
             elif len(req_dh.content) not in rel and req_dh.status_code not in [403, 401, 429]:
                 size_range = (len(req_dh.content) // 1000) * 1000
-                behavior_key = f"BODY_{main_len}_{size_range}"
-                behavior_msg = f"INTERESTING BEHAVIOR | BODY: {main_len}b > {len(req_dh.content)}b"
+                behavior_key = f"BODY_{len(req.content)}_{size_range}"
+                behavior_msg = f"INTERESTING BEHAVIOR | BODY: {len(req.content)}b > {len(req_dh.content)}b"
                 
-            elif len(req_dh.headers) != len(main_head) and len(req_dh.headers) not in range(len(main_head) - 10, len(main_head) + 10) and req_dh.status_code not in [403, 401, 429]:
-                behavior_key = f"HEADER_{len(main_head)}_{len(req_dh.headers)}"
-                behavior_msg = f"INTERESTING BEHAVIOR | HEADER: {len(main_head)}b > {len(req_dh.headers)}b"
+            elif len(req_dh.headers) != len(req.headers) and len(req_dh.headers) not in range(len(req.headers) - 10, len(req.headers) + 10) and req_dh.status_code not in [403, 401, 429]:
+                behavior_key = f"HEADER_{len(req.headers)}_{len(req_dh.headers)}"
+                behavior_msg = f"INTERESTING BEHAVIOR | HEADER: {len(req.headers)}b > {len(req_dh.headers)}b"
             
             if behavior_key:
                 if behavior_key not in behavior_groups:

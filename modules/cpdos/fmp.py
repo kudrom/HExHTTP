@@ -293,7 +293,7 @@ def cp_mix(
 
 
 def check_methods_poisoning(
-    url: str, s: requests.Session, custom_header: dict, authent: tuple[str, str] | None
+    url: str, s: requests.Session, args: argparse.Namespace, authent: tuple[str, str], **kwargs
 ) -> None:
     try:
         url = f"{url}?cb={random.randrange(99)}"
@@ -320,7 +320,7 @@ def check_methods_poisoning(
                 range_exlusion,
                 req_main,
                 len_main,
-                custom_header,
+                args.custom_header,
                 authent,
             )
             cp_mix(
@@ -330,7 +330,7 @@ def check_methods_poisoning(
                 range_exlusion,
                 req_main,
                 len_main,
-                custom_header,
+                args.custom_header,
                 authent,
             )
         else:

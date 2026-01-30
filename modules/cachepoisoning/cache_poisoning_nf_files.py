@@ -91,23 +91,22 @@ def check_reflection(
 
 
 def check_cache_files(
-    uri: str,
+    url: str,
     s: requests.Session,
-    custom_header: dict,
-    authent: tuple[str, str] | None,
+    authent: tuple[str, str],
+    **kwargs
 ) -> None:
 
     matching_forward = "ndvyepenbvtidpvyzh"
 
     for endpoints in ["plopiplop.js", "plopiplop.css"]:
-        url = f"{uri}{endpoints}" if uri[-1] == "/" else f"{uri}/{endpoints}"
+        full_url = f"{url}{endpoints}" if url[-1] == "/" else f"{url}/{endpoints}"
         try:
-            check_reflection(url, s, authent, matching_forward)
+            check_reflection(full_url, s, authent, matching_forward)
         except requests.Timeout:
             print(f" └── Timeout Error with {endpoints}")
         except KeyboardInterrupt:
             print(" ! Canceled by keyboard interrupt (Ctrl-C)")
             sys.exit()
         except Exception as e:
-            #print(e)
             logger.exception(e)

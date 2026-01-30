@@ -215,13 +215,12 @@ def uncommon_header_test(
                     verify_cp(url, s, main_status_code, main_len, headers, authent)
 
 
-def get_http_headers(
+def check_http_headers(
     url: str,
     s: requests.Session,
-    main_status_code: int,
-    main_len: int,
-    main_head: dict,
-    authent: tuple[str, str] | None = None,
+    req: Any,
+    authent: tuple[str, str],
+    **kwargs
 ) -> None:
     print(f"{Colors.CYAN} ├ Uncommon header analysis{Colors.RESET}")
     url = f"{url}?cb={random.randrange(9999)}"
@@ -229,7 +228,7 @@ def get_http_headers(
     uncommon_header = []
 
     try:
-        for header, _ in main_head.items():
+        for header, _ in req.headers.items():
             found = False
             for h in common_header:
                 if header.lower() == h.lower():
@@ -241,7 +240,7 @@ def get_http_headers(
 
             test_reflection(url, s, uncommon_header, authent)
             uncommon_header_test(
-                url, s, main_status_code, main_len, main_head, uncommon_header, authent
+                url, s, req.status_code, len(req.content), req.headers, uncommon_header, authent
             )
 
     except requests.exceptions.RequestException as re:

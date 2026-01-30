@@ -309,7 +309,7 @@ def display_deduplicated_results(
                 )
 
 
-def check_methods(url: str, custom_header: Any, authent: Any, human) -> None:
+def check_methods(url: str, args: argparse.Namespace, authent: Any, **kwargs) -> None:
     htimeout = Timeout(connect=7.0, read=7.0)
     http = PoolManager(timeout=htimeout)
 
@@ -345,7 +345,7 @@ def check_methods(url: str, custom_header: Any, authent: Any, human) -> None:
 
             for ml in method_list:
                 check_other_methods(ml, url, http, pad, results_tracker)
-                human_time(human)
+                human_time(args.humans)
                 print(f" {Colors.BLUE} Method: {ml} {Colors.RESET}   ", end="\r")
 
             display_deduplicated_results(results_tracker, pad, url, http)

@@ -10,7 +10,7 @@ logger = configure_logger(__name__)
 
 
 def check_localhost(
-    url: str, s: requests.Session, domain: str, authent: tuple[str, str] | None
+    url: str, s: requests.Session, domain: str, authent: tuple[str, str], **kwargs
 ) -> None:
     list_test = [
         # Original list

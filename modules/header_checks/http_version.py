@@ -711,7 +711,7 @@ def print_line(
     print(f" ├── {v:<15}: {code_str:<3}{spaces3}[{size}b]{server_info}{spaces5}{extra}")
 
 
-def check_http_version(url: str) -> None:
+def check_http_version(url: str, **kwargs) -> None:
     print(f"{Colors.CYAN} ├ Version & protocol analysis{Colors.RESET}")
 
     versions = [

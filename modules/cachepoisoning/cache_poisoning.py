@@ -226,16 +226,16 @@ def reflected_cache_poisoning(url, s, initialResponse, custom_header, authent, h
         logger.exception(e)
 
 
-def check_cache_poisoning(url, s, custom_header, authent, human):
+def check_cache_poisoning(url, s, args, authent, **kwargs):
     initialResponse = requests.get(
         randomiz_url(url),
-        headers=custom_header,
+        headers=args.custom_header,
         verify=False,
         allow_redirects=False,
         timeout=6,
     )
     print(f"{Colors.CYAN} ├ Cache poisoning analysis{Colors.RESET}")
 
-    port_poisoning(url, s, initialResponse, custom_header, authent, human)
-    reflected_cache_poisoning(url, s, initialResponse, custom_header, authent, human)
-    crawl_files(url, s, initialResponse, custom_header, authent, human)
+    port_poisoning(url, s, initialResponse, args.custom_header, authent, args.humans)
+    reflected_cache_poisoning(url, s, initialResponse, args.custom_header, authent, args.humans)
+    crawl_files(url, s, initialResponse, args.custom_header, authent, args.humans)
