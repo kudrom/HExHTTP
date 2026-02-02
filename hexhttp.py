@@ -198,7 +198,7 @@ def cli_main() -> None:
     """Entry point for the CLI command."""
     # Parse arguments
     args = get_args()
-    configure_logging(args.verbose, args.log, args.log_file)
+    configure_logging(args.verbose, args.log, args.log_file)      
 
     try:
         s = requests.Session()

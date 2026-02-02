@@ -155,12 +155,23 @@ def get_args() -> argparse.Namespace:
         help="What modules to run",
         required=False,
     )
+    group.add_argument(
+        "-gm",
+        "--get-modules",
+        action='store_true',
+        help="Return a list of all modules that can be run",
+        required=False,
+    )
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
     args = parser.parse_args()
+
+    if args.get_modules:
+        print(f'Current modules: \n{"\n".join(sorted(get_modules().keys()))}')
+        sys.exit()
 
     # Validate that either URL or file is provided
     if not args.url and not args.url_file:

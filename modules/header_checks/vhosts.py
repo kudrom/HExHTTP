@@ -4,6 +4,8 @@ import hashlib
 import secrets
 import socket
 import ssl
+import json
+import re
 from typing import Any
 
 from utils.style import Colors
@@ -11,6 +13,7 @@ from utils.utils import configure_logger, re, requests, string, urlparse
 
 logger = configure_logger(__name__)
 
+CF_VIA_REGEX=re.compile(r'1\.1 [a-f0-9]+\.cloudfront\.net \(cloudfront\)')
 
 def normalize_html(body: str | bytes) -> bytes:
     if isinstance(body, str):
@@ -31,18 +34,18 @@ def diff_headers(
         "server",
         "via",
         "x-cache",
-        "set-cookie",
         "location",
         "cf-cache-status",
         "x-powered-by",
     ],
 ) -> dict[str, tuple]:
     """Compare important headers between two responses"""
-    k = [x.title() for x in keys]
     diffs: dict[str, tuple[Any, Any]] = {}
-    for key in k:
+    for key in [x.title() for x in keys]:
         val1, val2 = h1.get(key), h2.get(key)
-        if val1 != val2:
+        if val1 and val2 and CF_VIA_REGEX.search(val1.lower()) and CF_VIA_REGEX.search(val2.lower()):
+            pass 
+        elif val1 != val2:
             diffs[key] = (val1, val2)
     return diffs
 
@@ -102,7 +105,7 @@ def get_vhost_via_ip(host: str, scheme: str = "http", path: str = "/") -> Any:
 
     url_ip = f"{scheme}://{ip}{path}"
     try:
-        ip_req = requests.get(url_ip, timeout=10, verify=False)
+        ip_req = requests.get(url_ip, timeout=10, verify=False, headers={"Host": host})
         return ip_req
     except Exception as e:
         logger.debug(f"Error accessing {url_ip}: {e}")
@@ -120,18 +123,14 @@ def rand_host(base: str) -> str:
         return f"{label}.{base}"
 
 
-def probe_random_host(url: str) -> Any:
+def probe_host(url: str, host: str, header='Host') -> Any:
     """Test with a random host to detect wildcards"""
-    parsed = urlparse(url)
-    host = parsed.netloc
-    rnd = rand_host(host)
-
     try:
-        r = requests.get(url, headers={"Host": rnd}, timeout=10, verify=False)
-        return rnd, r
+        r = requests.get(url, headers={header: host}, timeout=10, verify=False)
+        return r
     except Exception as e:
-        logger.debug(f"Error with random host {rnd}: {e}")
-        return rnd, None
+        logger.debug(f"Error with random host {host}: {e}")
+        return None
 
 
 def get_cert_san(host: str, port: int = 443) -> dict[str, Any] | None:
@@ -192,6 +191,9 @@ def compare_responses(
     if not resp1 or not resp2:
         return None
 
+    host1 = urlparse(url1).netloc
+    host2 = urlparse(url2).netloc
+
     hash1 = body_hash(resp1.content)
     hash2 = body_hash(resp2.content)
 
@@ -204,6 +206,8 @@ def compare_responses(
 
     is_different = (
         hash1 != hash2
+        or (host1 in content1 and host2 in content2)
+        or (host1 in str(resp1.headers) and host2 in str(resp2.headers))
         or header_diffs
         or signals1.get("canonical") != signals2.get("canonical")
         or signals1.get("title") != signals2.get("title")
@@ -223,13 +227,21 @@ def compare_responses(
             "header_diffs": header_diffs,
             "signals1": signals1,
             "signals2": signals2,
-            "different": True,
+            "differences": {
+                "hash": hash1 != hash2,
+                "header_diffs": len(header_diffs) > 0,
+                "canonical": signals1.get("canonical") != signals2.get("canonical"),
+                "title": signals1.get("title") != signals2.get("title"),
+                "status_code": resp1.status_code != resp2.status_code,
+                "body_reflected": (host1 in content1 and host2 in content2),
+                "header_reflected": (host1 in str(resp1.headers) and host2 in str(resp2.headers))
+            },
         }
 
     return None
 
 
-def check_vhost_enhanced(url: str) -> None:
+def check_vhost(url: str, **kwargs) -> None:
     print(f"{Colors.CYAN} ├ Vhosts misconfiguration analysis {Colors.RESET}")
 
     parsed_url = urlparse(url)
@@ -273,8 +285,6 @@ def check_vhost_enhanced(url: str) -> None:
                     print(
                         f" │      Status: {comparison['status1']} <> {comparison['status2']}, Size: {comparison['size1']}b vs {comparison['size2']}b"
                     )
-                    # if comparison['header_diffs']:
-                    # print(f" │      Header diffs: {comparison['header_diffs']}")
                     results.append(comparison)
 
         print(" ├─ Testing original basic vhosts")
@@ -313,24 +323,60 @@ def check_vhost_enhanced(url: str) -> None:
             except Exception:
                 continue
 
-        print(" ├─ Testing wildcard with random host")
-        rand_host_name, rand_resp = probe_random_host(url)
-        if rand_resp:
-            comparison = compare_responses(
-                baseline_resp, rand_resp, url, f"http://{rand_host_name}/"
-            )
-            if comparison:
-                print(
-                    f" │  └─ {Colors.YELLOW}[WILDCARD]{Colors.RESET} Wildcard detected with random host: {rand_host_name}"
+        print(" ├─ Testing wildcard with several hosts")
+        for new_host_name in [
+            rand_host(host),
+            ".".join(["".join(secrets.choice(string.ascii_lowercase) for _ in range(10)), host]),
+            f"{host}:8080",
+            "",
+            f"target.com\0{host}",
+            f" {host}",
+            f"\t{host}"
+        ]:
+            resp = probe_host(url, new_host_name)
+            if resp:
+                new_host_name = new_host_name.replace('\0', '%00')
+                comparison = compare_responses(
+                    baseline_resp, resp, url, f"http://{new_host_name}/"
                 )
-                print(
-                    f" │      Status: {comparison['status2']}, Size: {comparison['size2']}b"
+                if comparison:
+                    print(
+                        f" │  └─ {Colors.YELLOW}[WILDCARD]{Colors.RESET} Wildcard detected with host: {new_host_name}"
+                    )
+                    print(
+                        f" │      Status: {comparison['status2']}, Size: {comparison['size2']}b"
+                    )
+                    results.append(comparison)
+                else:
+                    print(
+                        f" │  └─ Host {new_host_name} returns same content (likely wildcard)"
+                    )
+
+        print(" ├─ Testing wildcard with several headers")
+        random_host = rand_host(host)
+        for header_name in [
+            "X-Forwarded-For",
+            "X-Forwarded-For-Original",
+            "X-Forwarded-Host",
+            "X-Host",
+        ]:
+            resp = probe_host(url, random_host, header_name)
+            if resp:
+                comparison = compare_responses(
+                    baseline_resp, resp, url, f"http://{random_host}"
                 )
-                results.append(comparison)
-            else:
-                print(
-                    f" │  └─ Random host {rand_host_name} returns same content (likely wildcard)"
-                )
+                if comparison:
+                    print(
+                        f" │  └─ {Colors.YELLOW}[WILDCARD]{Colors.RESET} Wildcard detected with header: {header_name}"
+                    )
+                    print(
+                        f" │      Status: {comparison['status2']}, Size: {comparison['size2']}b"
+                    )
+                    results.append(comparison)
+                else:
+                    print(
+                        f" │  └─ Header {header_name} returns same content (likely wildcard)"
+                    )
 
         if scheme == "https":
             print(" ├─ Analyzing SSL certificate")
@@ -360,10 +406,8 @@ def check_vhost_enhanced(url: str) -> None:
                                     results.append(comparison)
                             except Exception:
                                 continue
-
     except Exception:
         logger.exception("Exception in vhost checker")
 
-
-def check_vhost(url: str, **kwargs) -> None:
-    check_vhost_enhanced(url)
+    with open('check_vhost.json', 'w') as fp:
+        json.dump(results, fp)
