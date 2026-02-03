@@ -7,7 +7,6 @@ from utils.utils import configure_logger, requests, random, range_exclusion, tra
 from modules.lists.debug_list import DEBUG_HEADERS
 
 def check_http_debug(url, s, req, authent, args, **kwargs):
-    print(f"{Colors.CYAN} ├ Debug Headers analysis{Colors.RESET}")
     rel = range_exclusion(len(req.content))
     
     behavior_groups = {}

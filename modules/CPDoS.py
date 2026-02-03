@@ -121,7 +121,5 @@ def check_CPDoS(
             else f'{url}{req.headers["location"]}'
         )
 
-    print(f"{Colors.CYAN} ├ CPDoS analysis{Colors.RESET}")
-
     run_cpdos_modules(url, s, authent, args.humans)
     crawl_files(url, s, req, authent, args.humans)

@@ -712,8 +712,6 @@ def print_line(
 
 
 def check_http_version(url: str, **kwargs) -> None:
-    print(f"{Colors.CYAN} ├ Version & protocol analysis{Colors.RESET}")
-
     versions = [
         "HTTP/2",
         "HTTP/0.9",

@@ -4,6 +4,7 @@ from static.banner import run_banner
 from utils.style import Colors
 from utils.utils import argparse, sys, random, valid_log_level
 from modules import get_modules
+from collections import defaultdict
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -13,8 +14,13 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/118.0",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0"
 ]
-
 DEFAULT_USER_AGENT = random.choice(USER_AGENTS)
+
+PRESETS = {
+    'web_cache': ['check_cache_files', 'check_cachetag_header', 'check_methods_poisoning', 'check_reflection'],
+    'host_headers': ['check_vhost', 'check_localhost'],
+    'http_smuggling': ['check_http_version']
+}
 
 def get_args() -> argparse.Namespace:
     """
@@ -156,6 +162,11 @@ def get_args() -> argparse.Namespace:
         required=False,
     )
     group.add_argument(
+        "--preset",
+        choices=PRESETS.keys(),
+        help="What preset to run including the modules"
+    )
+    group.add_argument(
         "-gm",
         "--get-modules",
         action='store_true',
@@ -170,8 +181,20 @@ def get_args() -> argparse.Namespace:
     args = parser.parse_args()
 
     if args.get_modules:
-        print(f'Current modules: \n{"\n".join(sorted(get_modules().keys()))}')
+        lines = []
+        modules_in_presets = defaultdict(list)
+        for preset, modules in PRESETS.items():
+            for module in modules:
+                modules_in_presets[module].append(preset)
+
+        lines = []
+        for m in get_modules().keys():
+            lines.append(f"{m:<25}".format() + (f" -> {','.join(modules_in_presets[m])}" if m in modules_in_presets else ''))
+        print(f'Current modules: \n{"\n".join(sorted(lines))}')
         sys.exit()
+
+    if args.preset:
+        args.modules = PRESETS[args.preset]
 
     # Validate that either URL or file is provided
     if not args.url and not args.url_file:

@@ -222,7 +222,6 @@ def check_http_headers(
     authent: tuple[str, str],
     **kwargs
 ) -> None:
-    print(f"{Colors.CYAN} ├ Uncommon header analysis{Colors.RESET}")
     url = f"{url}?cb={random.randrange(9999)}"
 
     uncommon_header = []

@@ -102,6 +102,7 @@ def process_modules(url: str, s: requests.Session, args: argparse.Namespace) -> 
         # print(s.headers)
         start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"{Colors.SALMON}[STARTED]{Colors.RESET} {start_time}")
+        print(f" Modules: {', '.join(args.modules)}")
         print(f" URL: {url}")
         print(f" URL response: {Colors.GREEN}{main_status_code}{Colors.RESET}") if main_status_code == 200 else print(f" URL response: {Colors.YELLOW}{main_status_code}{Colors.RESET}")
         print(f" URL response size: {main_len} bytes")

@@ -313,7 +313,6 @@ def check_methods(url: str, args: argparse.Namespace, authent: Any, **kwargs) ->
     htimeout = Timeout(connect=7.0, read=7.0)
     http = PoolManager(timeout=htimeout)
 
-    print(f"{Colors.CYAN} ├ Methods analysis{Colors.RESET}")
     result_list: list[tuple[int, Any, str, int, bytes]] = []
     for funct in [get, post, put, patch, options]:
         try:

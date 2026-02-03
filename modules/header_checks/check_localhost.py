@@ -76,8 +76,6 @@ def check_localhost(
         "localhost%2eevil%2ecom",
     ]
 
-    print(f"{Colors.CYAN} ├ Host analysis{Colors.RESET}")
-
     results_tracker: dict[tuple, list] = {}
 
     def add_result(key: tuple, host: str) -> None:

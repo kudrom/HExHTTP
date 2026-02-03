@@ -242,8 +242,6 @@ def compare_responses(
 
 
 def check_vhost(url: str, **kwargs) -> None:
-    print(f"{Colors.CYAN} ├ Vhosts misconfiguration analysis {Colors.RESET}")
-
     parsed_url = urlparse(url)
     host = parsed_url.netloc
     scheme = parsed_url.scheme

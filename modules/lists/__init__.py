@@ -8,18 +8,6 @@ import os.path
 from modules.lists.all_payload_keys import all_payload_keys
 from modules.lists.payloads_errors import payloads_keys
 
-__all__ = [
-    "load_payloads_from",
-    "user_agents_list",
-    "payloads_keys",
-    "all_payload_keys",
-    "wcp_headers",
-]
-
-header_list = []
-user_agents_list = []
-paraminer_list = []
-
 
 def load_payloads_from(file_path: str) -> list[str]:
     """
@@ -38,5 +26,7 @@ def load_payloads_from(file_path: str) -> list[str]:
     return results
 
 
+paraminer_list = load_payloads_from("paraminer-wordlist.lst")
+header_list = load_payloads_from("lowercase-headers.lst")
 user_agents_list = load_payloads_from("user-agent.lst")
 wcp_headers = load_payloads_from("wcp_headers.lst")

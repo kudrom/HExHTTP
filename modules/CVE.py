@@ -78,6 +78,4 @@ def check_cpcve(
             else f'{url}{req.headers["location"]}'
         )
 
-    print(f"{Colors.CYAN} ├ Cache CVE analysis{Colors.RESET}")
-
     run_cve_modules(url, s, req, args.custom_header, authent)

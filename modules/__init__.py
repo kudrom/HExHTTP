@@ -3,7 +3,7 @@ from utils.style import Colors
 
 # cp & cpdos
 from modules.cachepoisoning.cache_poisoning_nf_files import check_cache_files
-from modules.cachepoisoning.cache_poisoning import check_cache_poisoning
+from modules.cachepoisoning.cache_poisoning import check_reflection
 from modules.cpdos.fmp import check_methods_poisoning
 from modules.CPDoS import check_CPDoS
 from modules.CVE import check_cpcve

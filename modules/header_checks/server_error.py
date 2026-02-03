@@ -416,7 +416,6 @@ class ServerErrorAnalyzer:
         authent: tuple[str, str] | None = None,
     ) -> dict[str, Any]:
         """Analyse principale des erreurs serveur"""
-        print(f"{Colors.CYAN} ├ Server error analysis {Colors.RESET}")
 
         results: dict = {
             "total_tests": len(self.payloads_error),

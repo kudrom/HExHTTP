@@ -4,8 +4,6 @@ from utils.style import Colors
 
 
 def check_cachetag_header(resp_main_headers: list[str], **kwargs) -> None:
-    print(f"{Colors.CYAN} ├ Header cache tags{Colors.RESET}")
-
     results = []
 
     for header in resp_main_headers:
