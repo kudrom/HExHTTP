@@ -36,8 +36,8 @@ def crawl_files(
     human: str,
 ) -> None:
     try:
-        regexp1 = r'(?<=src=")(\/[^\/].+?\.(js|css|html|htm)(?=")'
-        regexp2 = r'(?<=href=")(\/[^\/].+?\.(js|css|html|htm)(?=")'
+        regexp1 = r'(?<=src=")(\/[^\/].+?)\.(js|css|html|htm)(?=")'
+        regexp2 = r'(?<=href=")(\/[^\/].+?)\.(js|css|html|htm)(?=")'
         # regexp3 = r'(?<=src=")(\/[^\/].+?)(?=")'
         # regexp4 = r'(?<=href=")(\/[^\/].+?)(?=")'
 

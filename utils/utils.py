@@ -83,7 +83,7 @@ def human_time(human: str) -> None:
 
 
 def check_auth(auth: str, url: str) -> tuple[str, str] | None:
-    try:
+    if auth is not None:
         authent = (auth.split(":")[0], auth.split(":")[1])
         r = requests.get(
             url,
@@ -103,9 +103,6 @@ def check_auth(auth: str, url: str) -> tuple[str, str] | None:
                 sys.exit()
             else:
                 return None
-    except Exception as e:
-        logger.error('Error, the authentication format need to be "user:pass"')
-        return None
 
 def range_exclusion(main_len):
     range_exlusion = (
@@ -161,7 +158,8 @@ def new_session(base_session=None):
 
 
 def random_ua():
-    with open("./modules/lists/user-agent.lst", "r", encoding="utf-8") as f:
+    dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(dir, "../modules/lists/user-agent.lst"), "r", encoding="utf-8") as f:
         user_agents = [line.strip() for line in f if line.strip()]
 
     random_user_agent = {"User-Agent": random.choice(user_agents)}

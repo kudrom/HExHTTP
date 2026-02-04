@@ -70,14 +70,14 @@ def check_reflection(
             allow_redirects=False,
         )
         if matching_forward in req.text:
-            print_results(Identify.behavior , "BODY REFLECTION", "RESOURCE FILE", cache_tag_verify(req_valid), uri, pk)
+            print_results(Identify.behavior , "BODY REFLECTION", "RESOURCE FILE", cache_tag_verify(req), uri, pk)
             if proxy.proxy_enabled:
                 from utils.proxy import proxy_request
 
                 proxy_request(s, "GET", uri, headers=pk, data=None)
             valid_reflection(uri, s, pk, authent, matching_forward)
         elif matching_forward in req.headers:
-            print_results(Identify.behavior , "HEADER REFLECTION", "RESOURCE FILE", cache_tag_verify(req_valid), uri, pk)
+            print_results(Identify.behavior , "HEADER REFLECTION", "RESOURCE FILE", cache_tag_verify(req), uri, pk)
             if proxy.proxy_enabled:
                 from utils.proxy import proxy_request
 

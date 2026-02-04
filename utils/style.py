@@ -17,5 +17,5 @@ class Colors:
 
 
 class Identify:
-    behavior = f"{Colors.YELLOW}└──   INTERESTING BEHAVIOR  {Colors.RESET}"
-    confirmed = f"{Colors.RED}└── VULNERABILITY CONFIRMED {Colors.RESET}"
+    behavior = f"{Colors.YELLOW}   └──   INTERESTING BEHAVIOR  {Colors.RESET}"
+    confirmed = f"{Colors.RED}   └── VULNERABILITY CONFIRMED {Colors.RESET}"
