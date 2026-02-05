@@ -25,23 +25,27 @@ DEFAULT_USER_AGENT = (
 
 header = {"User-Agent": DEFAULT_USER_AGENT}
 
+green_msg = "{Colors.GREEN}{msg:<26}{Colors.RESET}"
+yellow_msg = "{Colors.YELLOW}{msg:<26}{Colors.RESET}"
+red_msg = "{Colors.RED}{msg:<26}{Colors.RESET}"
+redir_msg = "{Colors.REDIR}{msg:<26}{Colors.RESET}"
 desc_method = {
-    200: f"{Colors.GREEN}200 OK{Colors.RESET}",
-    204: f"{Colors.GREEN}204 No Content{Colors.RESET}",
-    400: f"{Colors.YELLOW}400 Bad Request{Colors.RESET}",
-    401: f"{Colors.RED}401 HTTP Authent{Colors.RESET}",
-    403: f"{Colors.RED}403 Forbidden{Colors.RESET}",
-    405: f"{Colors.YELLOW}405 Method Not Allowed{Colors.RESET}",
-    406: f"{Colors.YELLOW}406 Not Acceptable{Colors.RESET}",
-    409: f"{Colors.YELLOW}409 Conflict{Colors.RESET}",
-    410: f"{Colors.YELLOW}410 Gone{Colors.RESET}",
-    412: f"{Colors.YELLOW}412 Precondition Failed{Colors.RESET}",
-    500: f"{Colors.RED}500 Internal Server Error{Colors.RESET}",
-    501: f"{Colors.RED}501 Not Implemented{Colors.RESET}",
-    502: f"{Colors.RED}502 Bad Gateway{Colors.RESET}",
-    503: f"{Colors.RED}503 Service Unavailable{Colors.RESET}",
-    301: f"{Colors.REDIR}301 Moved Permanently{Colors.RESET}",
-    302: f"{Colors.REDIR}302 Moved Temporarily{Colors.RESET}",
+    200: green_msg.format(msg="200 OK", Colors=Colors),
+    204: green_msg.format(msg="204 No Content", Colors=Colors),
+    400: yellow_msg.format(msg="400 Bad Request", Colors=Colors),
+    401: red_msg.format(msg="401 HTTP Authent", Colors=Colors),
+    403: red_msg.format(msg="403 Forbidden", Colors=Colors),
+    405: yellow_msg.format(msg="405 Method Not Allowed", Colors=Colors),
+    406: yellow_msg.format(msg="406 Not Acceptable", Colors=Colors),
+    409: yellow_msg.format(msg="409 Conflict", Colors=Colors),
+    410: yellow_msg.format(msg="410 Gone", Colors=Colors),
+    412: yellow_msg.format(msg="412 Precondition Failed", Colors=Colors),
+    500: red_msg.format(msg="500 Internal Server Error", Colors=Colors),
+    501: red_msg.format(msg="501 Not Implemented", Colors=Colors),
+    502: red_msg.format(msg="502 Bad Gateway", Colors=Colors),
+    503: red_msg.format(msg="503 Service Unavailable", Colors=Colors),
+    301: redir_msg.format(msg="301 Moved Permanently", Colors=Colors),
+    302: redir_msg.format(msg="302 Moved Temporarily", Colors=Colors),
 }
 
 
