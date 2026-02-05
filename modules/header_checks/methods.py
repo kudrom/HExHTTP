@@ -117,7 +117,7 @@ def trace(url: str) -> tuple[int, Any, str, int, bytes]:
     )
 
 
-def verify_connect_method(url: str, http: PoolManager) -> tuple[bool, str]:
+def verify_connect_method(url: str, pool: PoolManager) -> tuple[bool, str]:
     target_ip = get_ip_from_url(url)
     vulnerabilities: list[str] = []
 
@@ -138,10 +138,10 @@ def verify_connect_method(url: str, http: PoolManager) -> tuple[bool, str]:
 
     baseline_responses = []
     try:
-        resp_target = http.request("CONNECT", target_ip + ":80")
+        resp_target = pool.request("CONNECT", target_ip + ":80")
         baseline_responses.append(resp_target.status)
 
-        resp_fake = http.request("CONNECT", "nonexistent.invalid:80")
+        resp_fake = pool.request("CONNECT", "nonexistent.invalid:80")
         baseline_responses.append(resp_fake.status)
 
     except Exception as e:
@@ -155,7 +155,7 @@ def verify_connect_method(url: str, http: PoolManager) -> tuple[bool, str]:
 
     for test_target, vuln_desc in security_tests:
         try:
-            resp = http.request("CONNECT", test_target)
+            resp = pool.request("CONNECT", test_target)
 
             if resp.status in [200, 201, 202, 204]:
                 successful_tests.append(vuln_desc)
@@ -200,7 +200,7 @@ def verify_connect_method(url: str, http: PoolManager) -> tuple[bool, str]:
         smuggling_payload = (
             f"{target_ip}:80 HTTP/1.1\r\nContent-Length: 20\r\n\r\nGET /admin HTTP/1.1"
         )
-        resp_smuggling = http.request("CONNECT", smuggling_payload)
+        resp_smuggling = pool.request("CONNECT", smuggling_payload)
 
         if resp_smuggling.status == 200 and len(resp_smuggling.data) > 50:
             return True, f"{Colors.RED}REQUEST SMUGGLING RISK{Colors.RESET}"
@@ -217,7 +217,7 @@ def verify_connect_method(url: str, http: PoolManager) -> tuple[bool, str]:
 def check_other_methods(
     ml: str,
     url: str,
-    http: PoolManager,
+    pool: PoolManager,
     pad: int,
     results_tracker: dict[tuple, list[dict]],
 ) -> None:
@@ -226,7 +226,7 @@ def check_other_methods(
         if ml == "DELETE":
             test_url = f"{url}plopiplop.css"
 
-        resp = http.request(ml, test_url, verify=False)
+        resp = pool.request(ml, test_url)
         rs = resp.status
         resp_h = resp.headers
 
@@ -280,7 +280,7 @@ def check_other_methods(
             }
         )
     except Exception as e:
-        logger.exception(e)
+        logger.error('Some exception when making a request')
         results_tracker[("ERROR", 0)].append(
             {
                 "method": ml,
@@ -294,7 +294,7 @@ def check_other_methods(
 
 
 def display_deduplicated_results(
-    results_tracker: dict[tuple, list[dict]], pad: int, url: str, http: PoolManager
+    results_tracker: dict[tuple, list[dict]], pad: int, url: str, pool: PoolManager
 ) -> None:
     displayed_groups: set[tuple] = set()
 
@@ -320,7 +320,7 @@ def display_deduplicated_results(
                 if method_result["method"] == "CONNECT" and method_result[
                     "status"
                 ] not in ["ERROR", 405, 501]:
-                    is_fp, fp_reason = verify_connect_method(url, http)
+                    is_fp, fp_reason = verify_connect_method(url, pool)
                     connect_info = (
                         f"[{Colors.GREEN}{'VALID'}: {fp_reason}{Colors.RESET}]"
                         if is_fp
@@ -334,9 +334,6 @@ def display_deduplicated_results(
 
 
 def check_methods(url: str, args: argparse.Namespace, authent: Any, **kwargs) -> None:
-    htimeout = Timeout(connect=7.0, read=7.0)
-    http = PoolManager(timeout=htimeout)
-
     result_list: list[tuple[int, Any, str, int, bytes]] = []
     for funct in [get, post, put, patch, options, trace]:
         try:
@@ -360,6 +357,11 @@ def check_methods(url: str, args: argparse.Namespace, authent: Any, **kwargs) ->
 
 
 def check_methods_bruteforce(url: str, args: argparse.Namespace, authent: Any, **kwargs) -> None:
+    pool = PoolManager(
+        timeout=Timeout(connect=7.0, read=7.0),
+        retries=False,
+        ssl_context=ssl._create_unverified_context()
+    )
     dir = os.path.dirname(os.path.abspath(__file__))
     list_path = os.path.join(dir, "../lists/methods_list.lst")
     try:
@@ -370,11 +372,11 @@ def check_methods_bruteforce(url: str, args: argparse.Namespace, authent: Any, *
             results_tracker: dict[tuple, list[dict]] = defaultdict(list)
 
             for ml in method_list:
-                check_other_methods(ml, url, http, pad, results_tracker)
+                check_other_methods(ml, url, pool, pad, results_tracker)
                 human_time(args.humans)
                 print(f" {Colors.BLUE} Method: {ml} {Colors.RESET}   ", end="\r")
 
-            display_deduplicated_results(results_tracker, pad, url, http)
+            display_deduplicated_results(results_tracker, pad, url, pool)
 
     except FileNotFoundError:
         logger.error(f"Methods list file not found: {list_path}")
