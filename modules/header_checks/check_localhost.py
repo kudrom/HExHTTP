@@ -118,10 +118,10 @@ def check_localhost(
             first_host = hosts_list[0]
             similar_count = len(hosts_list) - 1
             print(
-                f" ├── Host: {first_host:<25}{'→':^3} {result_info} ({Colors.CYAN}+{similar_count} similar{Colors.RESET})"
+                f"   ├── Host: {first_host:<25}{'→':^3} {result_info} ({Colors.CYAN}+{similar_count} similar{Colors.RESET})"
             )
             displayed_groups.add(result_key)
         # Handle individual results (< 3 hosts)
         elif len(hosts_list) < 3:
             for host in hosts_list:
-                print(f" ├── Host: {host:<25}{'→':^3} {result_info}")
+                print(f"   ├── Host: {host:<25}{'→':^3} {result_info}")

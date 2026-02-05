@@ -67,6 +67,11 @@ def get_args() -> argparse.Namespace:
         help="File of URLs",
         required=False,
     )
+    group.add_argument(
+        "--force",
+        help="Don't ask for any question",
+        action="store_true"
+    )
 
     group = parser.add_argument_group(f"{Colors.BLUE}> Request Settings{Colors.RESET}")
     group.add_argument(

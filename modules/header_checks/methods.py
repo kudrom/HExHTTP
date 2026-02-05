@@ -5,6 +5,10 @@ Check support for different HTTP methods (NOT DELETE & PATCH)
 Improved version with deduplication and CONNECT verification
 """
 
+import os
+import http.client
+import ssl
+
 from collections import defaultdict
 from typing import Any
 
@@ -35,6 +39,7 @@ desc_method = {
     500: f"{Colors.RED}500 Internal Server Error{Colors.RESET}",
     501: f"{Colors.RED}501 Not Implemented{Colors.RESET}",
     502: f"{Colors.RED}502 Bad Gateway{Colors.RESET}",
+    503: f"{Colors.RED}503 Service Unavailable{Colors.RESET}",
     301: f"{Colors.REDIR}301 Moved Permanently{Colors.RESET}",
     302: f"{Colors.REDIR}302 Moved Temporarily{Colors.RESET}",
 }
@@ -90,6 +95,21 @@ def options(url: str) -> tuple[int, Any, str, int, bytes]:
         "OPTIONS",
         len(req_o.content),
         req_o.content,
+    )
+
+
+def trace(url: str) -> tuple[int, Any, str, int, bytes]:
+    conn = http.client.HTTPSConnection("example.com", context=ssl._create_unverified_context())
+    conn.request("TRACE", "/", headers=header)
+    response = conn.getresponse()
+    body = response.read()
+
+    return (
+        response.status,
+        response.getheaders(),
+        "TRACE",
+        len(body),
+        body,
     )
 
 
@@ -202,7 +222,7 @@ def check_other_methods(
         if ml == "DELETE":
             test_url = f"{url}plopiplop.css"
 
-        resp = http.request(ml, test_url)
+        resp = http.request(ml, test_url, verify=False)
         rs = resp.status
         resp_h = resp.headers
 
@@ -314,7 +334,7 @@ def check_methods(url: str, args: argparse.Namespace, authent: Any, **kwargs) ->
     http = PoolManager(timeout=htimeout)
 
     result_list: list[tuple[int, Any, str, int, bytes]] = []
-    for funct in [get, post, put, patch, options]:
+    for funct in [get, post, put, patch, options, trace]:
         try:
             result_list.append(funct(url))
         except Exception as e:
@@ -334,7 +354,10 @@ def check_methods(url: str, args: argparse.Namespace, authent: Any, **kwargs) ->
                 if x.lower() == "allow":
                     print(f" │  └─ Allows: {req_head[x]}")
 
-    list_path = "modules/lists/methods_list.lst"
+
+def check_methods_bruteforce(url: str, args: argparse.Namespace, authent: Any, **kwargs) -> None:
+    dir = os.path.dirname(os.path.abspath(__file__))
+    list_path = os.path.join(dir, "../lists/methods_list.lst")
     try:
         with open(list_path) as method_file:
             method_list = method_file.read().splitlines()

@@ -115,7 +115,7 @@ def process_modules(url: str, s: requests.Session, args: argparse.Namespace) -> 
         print(f"{Colors.BLUE}⟘{Colors.RESET}")
         print(f"{Colors.BLUE}⟙{Colors.RESET}")
 
-        if main_status_code not in [200, 302, 301, 403, 401] and not args.url_file:
+        if main_status_code not in [200, 302, 301, 403, 401] and not args.url_file and not args.force:
             choice = input(
                 f" {Colors.YELLOW}The url does not seem to answer correctly, continue anyway ?{Colors.RESET} [y/n]"
             )

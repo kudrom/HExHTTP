@@ -12,7 +12,7 @@ from modules.header_checks.cachetag_header import check_cachetag_header
 # header checks
 from modules.header_checks.check_localhost import check_localhost
 from modules.header_checks.http_version import check_http_version
-from modules.header_checks.methods import check_methods
+from modules.header_checks.methods import check_methods_bruteforce, check_methods
 from modules.header_checks.server_error import check_server_error
 from modules.header_checks.uncommon_header import check_http_headers
 from modules.header_checks.vhosts import check_vhost
