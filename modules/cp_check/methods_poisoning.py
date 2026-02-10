@@ -106,7 +106,7 @@ def fat_methods_poisoning(
     url: str,
     s: requests.Session,
     requests_method: Sequence[str],
-    range_exlusion: range,
+    range_exclusion: range,
     req_main: requests.Response,
     len_main: int,
     custom_header: dict,
@@ -142,7 +142,7 @@ def fat_methods_poisoning(
                 )
                 behavior_check = True
                 verify_fat_get_poisoning(s, url, d, rm, req_main, len_main, authent)
-            elif len_fg not in range_exlusion:
+            elif len_fg not in range_exclusion:
                 print_result(
                     Identify.behavior,
                     "FAT",
@@ -183,7 +183,7 @@ def cp_mix(
     url: str,
     s: requests.Session,
     requests_method: Sequence[str],
-    range_exlusion: range,
+    range_exclusion: range,
     req_main: requests.Response,
     len_main: int,
     custom_header: dict,
@@ -219,7 +219,7 @@ def cp_mix(
                             d,
                         )
                         behavior_check = True
-                    elif len(req_mix.content) not in range_exlusion and len(
+                    elif len(req_mix.content) not in range_exclusion and len(
                         req_mix.content
                     ) != len(req_get.content):
                         print_result(
@@ -266,7 +266,7 @@ def cp_mix(
                         d,
                     )
                     behavior_check = True
-                elif len(req_mix.content) not in range_exlusion and len(
+                elif len(req_mix.content) not in range_exclusion and len(
                     req_mix.content
                 ) != len(req_get.content):
                     print_result(
@@ -304,7 +304,7 @@ def check_methods_poisoning(
         if req_main.status_code not in [403, 429]:
             len_main = len(req_main.content)
             requests_method = ["GET", "HEAD", "POST"]
-            range_exlusion = (
+            range_exclusion = (
                 range(len_main - CONTENT_DELTA_RANGE, len_main + CONTENT_DELTA_RANGE)
                 if len_main < 10000
                 else range(
@@ -317,7 +317,7 @@ def check_methods_poisoning(
                 url,
                 s,
                 requests_method,
-                range_exlusion,
+                range_exclusion,
                 req_main,
                 len_main,
                 custom_header,
@@ -327,7 +327,7 @@ def check_methods_poisoning(
                 url,
                 s,
                 requests_method,
-                range_exlusion,
+                range_exclusion,
                 req_main,
                 len_main,
                 custom_header,

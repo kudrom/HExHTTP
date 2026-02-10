@@ -21,6 +21,14 @@ PRESETS = {
     'host_headers': ['check_vhost', 'check_localhost'],
     'http_smuggling': ['check_http_version']
 }
+CVES = {
+    'NextJS': ['CVE-2025-57822', 'CVE-2024-46982', 'CVE-2025-29927', 'CVE-2025-49826'],
+    'Drupal': ['CVE-2023-5256'],
+    'SilverStripe': ['CVE-2019-19326'],
+    'Apache Traffic': ['CVE-2021-27577'],
+    'WordPress LiteSpeed': ['CVE-2024-47374'],
+    'Nuxt': ['CVE-2025-27415']
+}
 
 def get_args() -> argparse.Namespace:
     """
@@ -70,6 +78,11 @@ def get_args() -> argparse.Namespace:
     group.add_argument(
         "--force",
         help="Don't ask for any question",
+        action="store_true"
+    )
+    group.add_argument(
+        "-cves",
+        "--get_cves",
         action="store_true"
     )
 
@@ -196,6 +209,13 @@ def get_args() -> argparse.Namespace:
         for m in get_modules().keys():
             lines.append(f"{m:<25}".format() + (f" -> {','.join(modules_in_presets[m])}" if m in modules_in_presets else ''))
         print(f'Current modules: \n{"\n".join(sorted(lines))}')
+        sys.exit()
+    elif args.get_cves:
+        lines = [
+            f"{component:<30} {" ".join(sorted(cves))}"
+            for component, cves in CVES.items()
+        ]
+        print(f'Current CVES: \n{"\n".join(sorted(lines))}')
         sys.exit()
 
     if args.preset:

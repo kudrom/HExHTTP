@@ -105,7 +105,7 @@ def check_auth(auth: str, url: str) -> tuple[str, str] | None:
                 return None
 
 def range_exclusion(main_len):
-    range_exlusion = (
+    range_exclusion = (
         range(main_len - CONTENT_DELTA_RANGE, main_len + CONTENT_DELTA_RANGE)
         if main_len < 10000
         else range(
@@ -113,7 +113,7 @@ def range_exclusion(main_len):
             main_len + BIG_CONTENT_DELTA_RANGE,
         )
     )
-    return range_exlusion
+    return range_exclusion
 
 
 def check_waf(url, s, req, **kwargs):

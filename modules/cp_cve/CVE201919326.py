@@ -57,7 +57,7 @@ def silverstripe(
         )
         len_req = len(req.content)
 
-        range_exlusion = (
+        range_exclusion = (
             range(main_len - CONTENT_DELTA_RANGE, main_len + CONTENT_DELTA_RANGE)
             if main_len < 10000
             else range(
@@ -70,7 +70,7 @@ def silverstripe(
                 f" {Identify.behavior} | CVE-2019-19326 | TAG OK | {Colors.BLUE}{url}{Colors.RESET} | PAYLOAD: {headers}"
             )
             confirm_vuln(url, s, headers, authent)
-        elif len_req not in range_exlusion and req.status_code not in [
+        elif len_req not in range_exclusion and req.status_code not in [
             403,
             429,
             301,
