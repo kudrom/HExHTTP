@@ -92,7 +92,7 @@ def get_origin_ip(host: str) -> str | None:
         return None
 
 
-def get_vhost_via_ip(host: str, scheme: str = "http", path: str = "/") -> Any:
+def get_vhost_via_ip(host: str, s: requests.Session, scheme: str = "http", path: str = "/") -> Any:
     """Access the vhost via IP with Host header"""
     ip = get_origin_ip(host)
     if not ip:
@@ -105,7 +105,7 @@ def get_vhost_via_ip(host: str, scheme: str = "http", path: str = "/") -> Any:
 
     url_ip = f"{scheme}://{ip}{path}"
     try:
-        ip_req = requests.get(url_ip, timeout=10, verify=False, headers={"Host": host})
+        ip_req = s.get(url_ip, timeout=10, verify=False, headers={"Host": host})
         return ip_req
     except Exception as e:
         logger.debug(f"Error accessing {url_ip}: {e}")
@@ -123,10 +123,10 @@ def rand_host(base: str) -> str:
         return f"{label}.{base}"
 
 
-def probe_host(url: str, host: str, header='Host') -> Any:
+def probe_host(url: str, s: requests.Session, host: str, header='Host') -> Any:
     """Test with a random host to detect wildcards"""
     try:
-        r = requests.get(url, headers={header: host}, timeout=10, verify=False)
+        r = s.get(url, headers={header: host}, timeout=10, verify=False)
         return r
     except Exception as e:
         logger.debug(f"Error with random host {host}: {e}")
@@ -241,7 +241,7 @@ def compare_responses(
     return None
 
 
-def check_vhost(url: str, **kwargs) -> None:
+def check_vhost(url: str, s: requests.Session, **kwargs) -> None:
     parsed_url = urlparse(url)
     host = parsed_url.netloc
     scheme = parsed_url.scheme
@@ -251,7 +251,7 @@ def check_vhost(url: str, **kwargs) -> None:
     results = []
 
     try:
-        baseline_resp = requests.get(url, verify=False, timeout=10)
+        baseline_resp = s.get(url, verify=False, timeout=10)
 
         print(" ├─ Testing IP + Host header access")
         for path in test_paths:
@@ -261,7 +261,7 @@ def check_vhost(url: str, **kwargs) -> None:
                 test_url_original = url.rstrip("/") + path
 
             try:
-                original_resp = requests.get(
+                original_resp = s.get(
                     test_url_original, verify=False, timeout=10
                 )
             except Exception as e:
@@ -270,7 +270,7 @@ def check_vhost(url: str, **kwargs) -> None:
                 )
                 continue
 
-            ip_resp = get_vhost_via_ip(host, scheme, path)
+            ip_resp = get_vhost_via_ip(host, s, scheme, path)
             if ip_resp:
                 ip_test_url = f"{scheme}://{get_origin_ip(host)}{path}"
                 comparison = compare_responses(
@@ -299,7 +299,7 @@ def check_vhost(url: str, **kwargs) -> None:
 
         for vh in original_vhosts:
             try:
-                req_vh = requests.get(vh, verify=False, timeout=10)
+                req_vh = s.get(vh, verify=False, timeout=10)
                 if req_vh.status_code not in [404, 403, 425, 503, 500, 400] and len(
                     req_vh.content
                 ) not in range(
@@ -331,7 +331,7 @@ def check_vhost(url: str, **kwargs) -> None:
             f" {host}",
             f"\t{host}"
         ]:
-            resp = probe_host(url, new_host_name)
+            resp = probe_host(url, s, new_host_name)
             if resp:
                 new_host_name = new_host_name.replace('\0', '%00')
                 comparison = compare_responses(
@@ -358,7 +358,7 @@ def check_vhost(url: str, **kwargs) -> None:
             "X-Forwarded-Host",
             "X-Host",
         ]:
-            resp = probe_host(url, random_host, header_name)
+            resp = probe_host(url, s, random_host, header_name)
             if resp:
                 comparison = compare_responses(
                     baseline_resp, resp, url, f"http://{random_host}"
@@ -391,7 +391,7 @@ def check_vhost(url: str, **kwargs) -> None:
                         if san != host and not san.startswith("*."):
                             san_url = f"{scheme}://{san}/"
                             try:
-                                san_resp = requests.get(
+                                san_resp = s.get(
                                     san_url, verify=False, timeout=10
                                 )
                                 comparison = compare_responses(
